@@ -8,20 +8,35 @@ const Header = () => {
   return (
     <header className="App-header bg-slate-800 sticky top-0">
       <nav className="max-w-4xl mx-auto flex justify-center h-14 items-center font-semibold">
-        <Link
-          to="/shop"
-          className="p-4 mr-4 active:bg-slate-700 focus:bg-slate-700 hover:bg-slate-700 hover:text-slate-100 transition-all ease-linear"
-        >
-          Shop
-        </Link>
-        <Link
-          to="/cart"
-          className="p-4 mr-4 active:bg-slate-700 focus:bg-slate-700 hover:bg-slate-700 hover:text-slate-100 transition-all ease-linear"
-        >
-          Cart
-        </Link>
+        <div className="flex-grow">
+          <Link
+            to="/shop"
+            className="p-4 mr-4 active:bg-slate-700 focus:bg-slate-700 hover:bg-slate-700 hover:text-slate-100 transition-all ease-linear"
+          >
+            Shop
+          </Link>
+          <Link
+            to="/cart"
+            className="p-4 mr-4 active:bg-slate-700 focus:bg-slate-700 hover:bg-slate-700 hover:text-slate-100 transition-all ease-linear"
+          >
+            Cart
+          </Link>
+          <Link
+            to="/Shipping"
+            className="p-4 mr-4 active:bg-slate-700 focus:bg-slate-700 hover:bg-slate-700 hover:text-slate-100 transition-all ease-linear"
+          >
+            Shipping
+          </Link>
+          <Link
+            to="/login"
+            className="p-4 mr-4 active:bg-slate-700 focus:bg-slate-700 hover:bg-slate-700 hover:text-slate-100 transition-all ease-linear"
+          >
+            Log In
+          </Link>
+        </div>
 
-        <div className="flex items-center gap-2">
+        {/* cart, compare and liked */}
+        <div className="flex items-center gap-2 mr-4">
           {/* Cart */}
           <button className="hover:bg-slate-700 transition-all p-3 rounded-full text-emerald-800 relative">
             <svg
@@ -94,6 +109,11 @@ const Header = () => {
             )}
           </button>
         </div>
+
+        {/* user profile */}
+        <button className="border-0 p-1 w-10 h-10 rounded-full bg-slate-700">
+          <img src="" alt="" />
+        </button>
       </nav>
     </header>
   );
