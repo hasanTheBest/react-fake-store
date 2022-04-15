@@ -1,26 +1,123 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import auth from "../../../src/firebase.init";
-import { useSignInWithGoogle } from "react-firebase-hooks/auth";
+import {
+  useSendPasswordResetEmail,
+  useSignInWithEmailAndPassword,
+  useSignInWithGithub,
+  useSignInWithGoogle,
+} from "react-firebase-hooks/auth";
 
 const Login = () => {
-  const [signInWithGoogle, user, loading, error] = useSignInWithGoogle(auth);
+  const [email, setEmail] = useState({});
+  const [password, setPassword] = useState({});
+
+  const [signInWithGoogle, userGoogle, loadingGoogle, errorGoogle] =
+    useSignInWithGoogle(auth);
+  const [signInWithGithub, userGithub, loadingGithub, errorGithub] =
+    useSignInWithGithub(auth);
+  const [sendPasswordResetEmail, sendingResetPass, errorResetPass] =
+    useSendPasswordResetEmail(auth);
+  const [signInWithEmailAndPassword, userSignIn, loadingSingIn, errorSignIn] =
+    useSignInWithEmailAndPassword(auth);
+
   const navigate = useNavigate();
   const location = useLocation();
-
   let from = location.state?.from?.pathname || "/";
 
-  // useEffect(() => {
+  // input field validation
+  const validateInputField = (e, field) => {
+    // email validation code
+    const emailReg =
+      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    const emailErr = "Provide valid email";
 
-  // }, [user])
+    /*  
+      1. Minimum eight characters
+      2. at least one letter
+      3. one number
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    */
+    const passwordReg = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    const passwordErr = "Min 8 chars, at least one letter, number";
 
-  const handleClickSignInWith = (provider) => {
-    if (provider === "google") {
-      signInWithGoogle();
+    switch (field) {
+      case "email":
+        if (e.target.value !== "" && emailReg.test(e.target.value)) {
+          // remove red border of the input field
+          e.target.classList.remove("border-red-800", "focus:border-red-800");
+          setEmail({ ...email, data: e.target.value, error: "" });
+        } else {
+          // add red border to the input field
+          e.target.classList.add("border-red-800", "focus:border-red-800");
+          // set error to state
+          setEmail({
+            ...email,
+            error: emailErr,
+          });
+        }
+        break;
+      case "password":
+        if (e.target.value !== "" && passwordReg.test(e.target.value)) {
+          // remove red border of the input field
+          e.target.classList.remove("border-red-800", "focus:border-red-800");
+          setPassword({ ...password, data: e.target.value, error: "" });
+        } else {
+          // add red border to the input field
+          e.target.classList.add("border-red-800", "focus:border-red-800");
+          // e.target.focus();
+          setPassword({
+            ...password,
+            error: passwordErr,
+          });
+        }
+        break;
+      default:
+        alert("Encountered an error. Please try again later.");
     }
   };
 
-  if (user) navigate(from, { replace: true });
+  // handle click login form button
+  const handleLogInFormSubmission = (e) => {
+    e.preventDefault();
+
+    if (email.error || password.error) {
+      alert("Try fixing error. Then submit");
+      return;
+    }
+
+    // log in with email and password
+    signInWithEmailAndPassword(email.data, password.data);
+  };
+
+  // signInWithXXX
+  const handleClickSignInWith = (provider) => {
+    if (provider === "google") {
+      signInWithGoogle();
+    } else {
+      signInWithGithub();
+    }
+  };
+
+  // send password reset link
+  const handleResetPassword = async () => {
+    if (email.data) {
+      await sendPasswordResetEmail(email.data);
+      alert("Password reset email is sent");
+    } else {
+      alert("Provide Email Address.");
+    }
+  };
+
+  if (errorGoogle || errorGithub || errorSignIn || errorResetPass)
+    console.error(
+      errorGoogle?.message ||
+        errorGithub?.message ||
+        errorSignIn?.message ||
+        errorResetPass?.message
+    );
+
+  if (userGoogle || userGithub || userSignIn) navigate(from, { replace: true });
 
   return (
     <div className="p-8 max-w-2xl mx-auto mt-12 rounded shadow-md border border-slate-700 bg-slate-800">
@@ -28,7 +125,10 @@ const Login = () => {
         Log In
       </h2>
 
-      <form className="mb-6 text-slate-400 font-semibold text-lg">
+      <form
+        className="mb-2 text-slate-400 font-semibold text-lg"
+        onSubmit={handleLogInFormSubmission}
+      >
         {/* email */}
         <div className="mb-4 w-full flex flex-col">
           <label htmlFor="email" className="mb-2">
@@ -40,7 +140,15 @@ const Login = () => {
             id="email"
             placeholder="Your Email"
             className="p-3 border border-slate-600 bg-slate-700 focus:bg-slate-600 focus:text-slate-200 flex-grow rounded shadow"
+            onBlur={(e) => validateInputField(e, "email")}
           />
+
+          {/* Error message */}
+          {!!email.error && (
+            <p className="text-red-500 mt-2 text-sm font-normal">
+              {email.error}
+            </p>
+          )}
         </div>
         {/* password */}
         <div className="mb-4 w-full flex flex-col">
@@ -53,7 +161,14 @@ const Login = () => {
             id="password"
             placeholder="Your Password"
             className="p-3 border border-slate-600 bg-slate-700 focus:bg-slate-600 focus:text-slate-200 flex-grow rounded shadow"
+            onBlur={(e) => validateInputField(e, "password")}
           />
+          {/* Error message */}
+          {!!password.error && (
+            <p className="text-red-500 mt-2 text-sm font-normal">
+              {password.error}
+            </p>
+          )}
         </div>
         {/* submit button */}
         <input
@@ -62,6 +177,15 @@ const Login = () => {
           className="w-full p-3 text-center shadow-md cursor-pointer rounded bg-sky-800 hover:bg-sky-700 text-sky-300 hover:text-sky-200 transition-all mt-4"
         />
       </form>
+      <p className="mt-1 text-slate-400">
+        Forgot password?{" "}
+        <button
+          className="cursor-pointer text-sky-400"
+          onClick={handleResetPassword}
+        >
+          reset password
+        </button>
+      </p>
 
       <p className="my-3 text-slate-400">
         Not a user?{" "}
@@ -83,7 +207,10 @@ const Login = () => {
           >
             Google
           </button>
-          <button className="py-2 px-4 shadow bg-emerald-800 hover:bg-emerald-700 text-emerald-400 hover:text-emerald-300 transition-all rounded border-0">
+          <button
+            className="py-2 px-4 shadow bg-emerald-800 hover:bg-emerald-700 text-emerald-400 hover:text-emerald-300 transition-all rounded border-0"
+            onClick={() => handleClickSignInWith("github")}
+          >
             Github
           </button>
         </div>

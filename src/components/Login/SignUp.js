@@ -1,11 +1,27 @@
+import { updateProfile } from "firebase/auth";
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import {
+  useCreateUserWithEmailAndPassword,
+  useUpdateProfile,
+} from "react-firebase-hooks/auth";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import auth from "../../firebase.init";
 
 const SignUp = () => {
   const [name, setName] = useState({});
   const [email, setEmail] = useState({});
   const [password, setPassword] = useState({});
   const [confirmPassErr, setConfirmPassErr] = useState("");
+
+  // firebase authentication
+  const [createUserWithEmailAndPassword, user, loading, error] =
+    useCreateUserWithEmailAndPassword(auth, { sendEmailVerification: true });
+  const [updateProfile, updatingProfile, errorProfile] = useUpdateProfile(auth);
+
+  // router
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/";
 
   const validateInputField = (e, field) => {
     // at least 3 characters
@@ -94,7 +110,7 @@ const SignUp = () => {
     }
   };
 
-  const handleSignUpFormSubmit = (e) => {
+  const handleSignUpFormSubmit = async (e) => {
     e.preventDefault();
 
     if (name.error || email.error || password.error || confirmPassErr) {
@@ -102,13 +118,22 @@ const SignUp = () => {
       return;
     }
 
-    console.log(
-      "name email pass confirm",
-      name.data,
-      email.data,
-      password.data
-    );
+    // create user with email and password
+    await createUserWithEmailAndPassword(email.data, password.data);
+    await updateProfile({ displayName: name.data });
+    navigate(from, { replace: true });
+
+    // update user profile display name
+    // await updateProfile({ displayName: name.data });
   };
+
+  //
+  // if (error || errorProfile)
+  //   console.error(error.message || errorProfile.message);
+
+  if (user) {
+    navigate(from, { replace: true });
+  }
 
   return (
     <div className="p-8 max-w-2xl mx-auto mt-12 rounded shadow-md border border-slate-700 bg-slate-800">
