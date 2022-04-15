@@ -1,6 +1,7 @@
 import React, { useContext } from "react";
 import { Link } from "react-router-dom";
 import { ShopContext } from "../../context/ShopProvider";
+import UserProfileThumb from "./UserProfileThumb";
 
 const Header = () => {
   const { cart, likedProducts, comparedProducts } = useContext(ShopContext);
@@ -111,9 +112,7 @@ const Header = () => {
         </div>
 
         {/* user profile */}
-        <button className="border-0 p-1 w-10 h-10 rounded-full bg-slate-700">
-          <img src="" alt="" />
-        </button>
+        <UserProfileThumb />
       </nav>
     </header>
   );

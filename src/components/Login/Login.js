@@ -1,8 +1,26 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import auth from "../../../src/firebase.init";
+import { useSignInWithGoogle } from "react-firebase-hooks/auth";
 
 const Login = () => {
-  // const [user, setUser] = useState(false);
+  const [signInWithGoogle, user, loading, error] = useSignInWithGoogle(auth);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  let from = location.state?.from?.pathname || "/";
+
+  // useEffect(() => {
+
+  // }, [user])
+
+  const handleClickSignInWith = (provider) => {
+    if (provider === "google") {
+      signInWithGoogle();
+    }
+  };
+
+  if (user) navigate(from, { replace: true });
 
   return (
     <div className="p-8 max-w-2xl mx-auto mt-12 rounded shadow-md border border-slate-700 bg-slate-800">
@@ -59,7 +77,10 @@ const Login = () => {
         </span>
 
         <div className="flex gap-2 justify-center">
-          <button className="py-2 px-4 shadow bg-sky-800 hover:bg-sky-700 text-sky-400 hover:text-sky-300 transition-all rounded border-0">
+          <button
+            className="py-2 px-4 shadow bg-sky-800 hover:bg-sky-700 text-sky-400 hover:text-sky-300 transition-all rounded border-0"
+            onClick={() => handleClickSignInWith("google")}
+          >
             Google
           </button>
           <button className="py-2 px-4 shadow bg-emerald-800 hover:bg-emerald-700 text-emerald-400 hover:text-emerald-300 transition-all rounded border-0">
